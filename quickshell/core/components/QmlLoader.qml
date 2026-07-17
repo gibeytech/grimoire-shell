@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import QtQml.Models
 
 import "../runtime" as Runtime
 import "../providers" as Providers
@@ -23,20 +24,29 @@ Item {
             source: Qt.resolvedUrl("../../" + modelData.resolvedSource)
 
             onLoaded: {
-                console.log("[QmlLoader] Loaded provider:", modelData.id, modelData.resolvedSource)
+                console.log(
+                    "[QmlLoader] Loaded provider:",
+                    modelData.id,
+                    modelData.resolvedSource
+                )
 
                 Runtime.Runtime.markLoaded(modelData.id)
 
                 if (item) {
                     Providers.ProviderRegistry.registerProvider(item)
                 } else {
-                    console.warn("[QmlLoader] Provider loaded without item:", modelData.id)
+                    console.warn(
+                        "[QmlLoader] Provider loaded without item:",
+                        modelData.id
+                    )
                 }
             }
         }
     }
 
-    Repeater {
+    Instantiator {
+        id: componentInstantiator
+
         model: qmlRuntimeLoader.components
 
         delegate: PanelWindow {
@@ -57,6 +67,7 @@ Item {
 
             Timer {
                 id: focusTimer
+
                 interval: 50
                 repeat: false
 
@@ -71,13 +82,19 @@ Item {
                     return
                 }
 
-                if (qmlLoader.item && qmlLoader.item.forceActiveFocus) {
+                if (
+                    qmlLoader.item
+                    && qmlLoader.item.forceActiveFocus
+                ) {
                     qmlLoader.item.forceActiveFocus()
                 }
             }
 
             function deactivateLoadedItem() {
-                if (qmlLoader.item && qmlLoader.item.deactivate) {
+                if (
+                    qmlLoader.item
+                    && qmlLoader.item.deactivate
+                ) {
                     qmlLoader.item.deactivate()
                 }
             }
@@ -141,22 +158,29 @@ Item {
 
                 anchors.fill: parent
                 active: modelData.type === "window"
-                source: Qt.resolvedUrl("../../" + modelData.resolvedSource)
+
+                source: Qt.resolvedUrl(
+                    "../../" + modelData.resolvedSource
+                )
 
                 onLoaded: {
                     Runtime.Runtime.markLoaded(modelData.id)
 
                     if (item && item.actionTriggered) {
-                        item.actionTriggered.connect(function(command) {
-                            runtimeWindow.executeCommand(command)
-                            runtimeWindow.closeWindow()
-                        })
+                        item.actionTriggered.connect(
+                            function(command) {
+                                runtimeWindow.executeCommand(command)
+                                runtimeWindow.closeWindow()
+                            }
+                        )
                     }
 
                     if (item && item.closeRequested) {
-                        item.closeRequested.connect(function() {
-                            runtimeWindow.closeWindow()
-                        })
+                        item.closeRequested.connect(
+                            function() {
+                                runtimeWindow.closeWindow()
+                            }
+                        )
                     }
 
                     focusTimer.restart()
